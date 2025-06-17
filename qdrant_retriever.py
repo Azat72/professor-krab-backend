@@ -4,10 +4,18 @@ from qdrant_client.http.models import Filter, FieldCondition, MatchValue, Search
 from sentence_transformers import SentenceTransformer
 
 QDRANT_COLLECTION = "legal_documents"
-QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
-QDRANT_PORT = int(os.getenv("QDRANT_PORT", 6333))
 
-client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue, SearchParams
+from sentence_transformers import SentenceTransformer
+
+QDRANT_COLLECTION = "legal_documents"
+QDRANT_URL = os.getenv("QDRANT_URL", "https://qdrant-render-cosz.onrender.com")  # твой URL Render Qdrant
+
+client = QdrantClient(url=QDRANT_URL)
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
+
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 
