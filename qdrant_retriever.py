@@ -1,35 +1,24 @@
-import os
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import SearchParams
 from sentence_transformers import SentenceTransformer
 
-# Название коллекции
+# Название коллекции в Qdrant Cloud
 QDRANT_COLLECTION = "legal_documents"
 
-# Адрес и ключ доступа к Qdrant Cloud
-QDRANT_URL = os.getenv(
-    "QDRANT_URL",
-    "https://62dda2c9-a689-4091-97a3-3ce3f60dcba4.us-east4-0.gcp.cloud.qdrant.io"
-)
-QDRANT_API_KEY = os.getenv(
-    "QDRANT_API_KEY",
-    "sk-cdaf10fad862474a94007f3d0d5c66a5"
-)
-
-# Инициализация клиента Qdrant Cloud
+# Прямое подключение к твоему Qdrant Cloud
 client = QdrantClient(
-    url=QDRANT_URL,
-    api_key=QDRANT_API_KEY
+    url="https://62dda2c9-a689-4091-97a3-3ce3f60dcba4.us-east4-0.gcp.cloud.qdrant.io",
+    api_key="sk-cdaf10fad862474a94007f3d0d5c66a5"
 )
 
-# Модель эмбеддингов
+# Загружаем модель эмбеддингов (размерность 384)
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 def search_qdrant(query: str, top_k: int = 20):
-    # Векторизация запроса
+    # Векторизуем запрос
     embedding = model.encode(query).tolist()
 
-    # Поиск по коллекции
+    # Выполняем поиск в Qdrant Cloud
     results = client.search(
         collection_name=QDRANT_COLLECTION,
         query_vector=embedding,
@@ -37,7 +26,7 @@ def search_qdrant(query: str, top_k: int = 20):
         search_params=SearchParams(hnsw_ef=128, exact=False),
     )
 
-    # Группировка и сортировка результатов по source_file и score
+    # Группируем результаты по файлам и сортируем по score
     grouped = {}
     for hit in results:
         file_key = hit.payload.get("source_file", "")
@@ -56,4 +45,3 @@ def search_qdrant(query: str, top_k: int = 20):
         sorted_results.extend(sorted_chunks)
 
     return sorted_results
-
